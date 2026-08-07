@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'mrosConverter'
+package_name = 'test_converter'
 
 setup(
     name=package_name,
@@ -24,10 +24,10 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'imuTest = mrosConverter.imuTest:main',
-            'rawConverter = mrosConverter.rawConverter:main',
-            'gpsPub = mrosConverter.gpsPub:main',
-            'rawTofTest = mrosConverter.rawTofTest:main',
+            'imuTest = test_converter.imuTest:main',
+            'rawConverter = test_converter.rawConverter:main',
+            'gpsPub = test_converter.gpsPub:main',
+            'rawTofTest = test_converter.rawTofTest:main',
         ],
     },
 )
