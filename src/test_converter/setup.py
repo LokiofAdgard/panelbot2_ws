@@ -28,6 +28,7 @@ setup(
             'rawConverter = test_converter.rawConverter:main',
             'gpsPub = test_converter.gpsPub:main',
             'rawTofTest = test_converter.rawTofTest:main',
+            'msgTest = test_converter.msgTest:main',
         ],
     },
 )
