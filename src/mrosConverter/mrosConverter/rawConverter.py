@@ -83,6 +83,7 @@ class RawConverter(Node):
         self.mc_pub_enc2 = self.create_publisher(Int32, "mc/enc_m2", 10)
         self.mc_pub_enc3 = self.create_publisher(Int32, "mc/enc_m3", 10)
         self.mc_pub_enc4 = self.create_publisher(Int32, "mc/enc_m4", 10)
+        self.mc_pub_sta = self.create_publisher(Int32, "mc/sta", 10)
         self.mc_pub_temp = self.create_publisher(Float32, "mc/temp", 10)
 
         self.get_logger().info("rawConverter started — IMU, PC, MC demux + conversions active")
@@ -157,12 +158,14 @@ class RawConverter(Node):
         enc3 = Int32(); enc3.data = raw[2]
         enc4 = Int32(); enc4.data = raw[3]
 
-        temp = Float32(); temp.data = float(raw[4]) * self.TEMP_LSB
+        sta =  Int32(); sta.data = (raw[4] & 0xFFFF)
+        temp = Float32(); temp.data = float(raw[4] >> 16) * self.TEMP_LSB
 
         self.mc_pub_enc1.publish(enc1)
         self.mc_pub_enc2.publish(enc2)
         self.mc_pub_enc3.publish(enc3)
         self.mc_pub_enc4.publish(enc4)
+        self.mc_pub_sta.publish(sta)
         self.mc_pub_temp.publish(temp)
 
 

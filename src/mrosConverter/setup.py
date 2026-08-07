@@ -26,6 +26,8 @@ setup(
         'console_scripts': [
             'imuTest = mrosConverter.imuTest:main',
             'rawConverter = mrosConverter.rawConverter:main',
+            'gpsPub = mrosConverter.gpsPub:main',
+            'rawTofTest = mrosConverter.rawTofTest:main',
         ],
     },
 )
