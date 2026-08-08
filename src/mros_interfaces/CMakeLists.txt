@@ -21,8 +21,19 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+find_package(geometry_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+
 rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/Ina.msg"
   "msg/Pbus.msg"
+  "msg/Encs.msg"
+  "msg/Imu.msg"
+  "msg/Tof.msg"
+  "msg/PcStat.msg"
+  "msg/McStat.msg"
+  "msg/MotorCmd.msg"
+  DEPENDENCIES geometry_msgs std_msgs
 )
 
 ament_package()
