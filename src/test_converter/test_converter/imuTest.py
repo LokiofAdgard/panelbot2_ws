@@ -31,11 +31,24 @@ class ImuNoDrift(Node):
             20
         )
 
+        self.last_msg_time = self.get_clock().now()
+        self.watchdog_timer = self.create_timer(
+            0.05,   # check every 50 ms
+            self.watchdog_check
+        )
+
+        self.last_change_time = self.get_clock().now()
+        self.last_q = None
+
+        self.last_tf_time = self.get_clock().now()
+
         self.br = TransformBroadcaster(self)
         self.get_logger().info("IMU smooth relative TF broadcaster started")
 
 
     def imu_callback(self, msg):
+
+        self.last_msg_time = self.get_clock().now()
 
         if len(msg.data) != 11:
             return
@@ -43,6 +56,18 @@ class ImuNoDrift(Node):
         # Raw quaternion
         qw, qx, qy, qz = msg.data[0:4]
         q_raw = Rotation.from_quat([qx, qy, qz, qw])
+
+        if self.last_q is None:
+            self.last_q = q_raw
+        else:
+            # Compare quaternion difference
+            delta = q_raw * self.last_q.inv()
+            angle = delta.magnitude()
+
+            # If rotation changed more than tiny threshold
+            if angle > 1e-4:
+                self.last_change_time = self.get_clock().now()
+                self.last_q = q_raw
 
         calib = msg.data[10]
 
@@ -75,6 +100,8 @@ class ImuNoDrift(Node):
 
     def publish_tf(self, orientation):
 
+        self.last_tf_time = self.get_clock().now()
+
         q = orientation.as_quat()
 
         t = TransformStamped()
@@ -95,6 +122,33 @@ class ImuNoDrift(Node):
         t.transform.rotation.w = float(q[3])
 
         self.br.sendTransform(t)
+
+    def watchdog_check(self):
+        now = self.get_clock().now()
+        dt = (now - self.last_msg_time).nanoseconds / 1e6  # ms
+
+        if dt > 150:
+            self.get_logger().warn(
+                f"No IMU data received for {dt:.1f} ms"
+            )
+
+    def watchdog_check(self):
+        now = self.get_clock().now()
+        dt = (now - self.last_change_time).nanoseconds / 1e6  # ms
+
+        if dt > 150:
+            self.get_logger().warn(
+                f"IMU orientation unchanged for {dt:.1f} ms"
+            )
+
+        def watchdog_check(self):
+            now = self.get_clock().now()
+            dt_tf = (now - self.last_tf_time).nanoseconds / 1e6  # ms
+
+            if dt_tf > 150:
+                self.get_logger().warn(
+                    f"TF not published for {dt_tf:.1f} ms — executor may be stuck"
+                )
 
 
 def main(args=None):

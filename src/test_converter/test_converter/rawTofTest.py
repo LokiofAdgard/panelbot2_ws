@@ -20,12 +20,13 @@ class ToFHeatmap(Node):
         self.get_logger().info("ToF Heatmap Visualizer Started")
 
     def callback(self, msg):
-        if len(msg.data) != 64:
-            self.get_logger().warn(f"Expected 64 values, got {len(msg.data)}")
-            return
+        data64 = msg.data[:64]
+        # if len(msg.data) != 64:
+        #     self.get_logger().warn(f"Expected 64 values, got {len(msg.data)}")
+        #     return
 
         # Convert to numpy 8x8
-        arr = np.array(msg.data, dtype=np.float32).reshape((8, 8))
+        arr = np.array(data64, dtype=np.float32).reshape((8, 8))
 
         # Normalize to 0–255
         norm = cv2.normalize(arr, None, 0, 255, cv2.NORM_MINMAX)
