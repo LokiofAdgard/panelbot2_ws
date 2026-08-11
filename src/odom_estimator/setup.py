@@ -1,8 +1,6 @@
-import os
-from glob import glob
 from setuptools import find_packages, setup
 
-package_name = 'mros_converter'
+package_name = 'odom_estimator'
 
 setup(
     name=package_name,
@@ -12,8 +10,6 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        (os.path.join('share', package_name, 'launch'), glob('launch/*')),
-        (os.path.join('share', package_name, 'config'), glob('config/*')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -28,8 +24,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'converter_node = mros_converter.converter_node:main',
-            'safety_monitor = mros_converter.safety_monitor:main',
+            'initial_pos = odom_estimator.initial_pos:main',
+            'odom_tracker = odom_estimator.odom_tracker:main',
         ],
     },
 )

@@ -127,28 +127,28 @@ class ImuNoDrift(Node):
         now = self.get_clock().now()
         dt = (now - self.last_msg_time).nanoseconds / 1e6  # ms
 
-        if dt > 150:
-            self.get_logger().warn(
-                f"No IMU data received for {dt:.1f} ms"
-            )
+        # if dt > 150:
+            # self.get_logger().warn(
+            #     f"No IMU data received for {dt:.1f} ms"
+            # )
 
     def watchdog_check(self):
         now = self.get_clock().now()
         dt = (now - self.last_change_time).nanoseconds / 1e6  # ms
 
-        if dt > 150:
-            self.get_logger().warn(
-                f"IMU orientation unchanged for {dt:.1f} ms"
-            )
+        # if dt > 150:
+            # self.get_logger().warn(
+            #     f"IMU orientation unchanged for {dt:.1f} ms"
+            # )
 
         def watchdog_check(self):
             now = self.get_clock().now()
             dt_tf = (now - self.last_tf_time).nanoseconds / 1e6  # ms
 
-            if dt_tf > 150:
-                self.get_logger().warn(
-                    f"TF not published for {dt_tf:.1f} ms — executor may be stuck"
-                )
+            # if dt_tf > 150:
+                # self.get_logger().warn(
+                #     f"TF not published for {dt_tf:.1f} ms — executor may be stuck"
+                # )
 
 
 def main(args=None):
