@@ -26,6 +26,9 @@ setup(
         'console_scripts': [
             'initial_pos = odom_estimator.initial_pos:main',
             'odom_tracker = odom_estimator.odom_tracker:main',
+            'ecc_tracker = odom_estimator.ecc_tracker:main',
+            'imu_tracker = odom_estimator.imu_tracker:main',
+            'ei_tracker = odom_estimator.ei_tracker:main',
         ],
     },
 )
