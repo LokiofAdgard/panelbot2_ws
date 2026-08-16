@@ -22,7 +22,7 @@ class InitialPosPublisher(Node):
 
         self.subscription = self.create_subscription(
             Image,
-            '/camera/april_image_raw',
+            '/camera/image_raw',
             self.image_callback,
             10
         )
@@ -62,12 +62,12 @@ class InitialPosPublisher(Node):
 
         self.declare_parameter(
             "x_axis",
-            "-camera_x"
+            "camera_x"
         )
 
         self.declare_parameter(
             "y_axis",
-            "-camera_y"
+            "camera_y"
         )
 
         self.x_axis = self.get_parameter(
@@ -116,7 +116,7 @@ class InitialPosPublisher(Node):
 
         self.declare_parameter(
             "calibration_scale",
-            30.0
+            1.0
         )
 
         self.calibration_scale = float(

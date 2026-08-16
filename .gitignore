@@ -1,4 +1,15 @@
-/build
-/install
-/log
+# ROS 2 build artifacts
+/build/
+/install/
+/log/
+
+# Python
 __pycache__/
+*.py[cod]
+
+# Virtual environment
+.venv/
+
+# Optional: Python tooling/cache
+.pytest_cache/
+.mypy_cache/

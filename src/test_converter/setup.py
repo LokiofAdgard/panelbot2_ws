@@ -30,6 +30,8 @@ setup(
             'rawTofTest = test_converter.rawTofTest:main',
             'msgTest = test_converter.msgTest:main',
             'rawConverter2 = test_converter.rawConverter2:main',
+            'test_april = test_converter.test_april:main',
+            'test_april_viewer = test_converter.test_april_viewer:main',
         ],
     },
 )
