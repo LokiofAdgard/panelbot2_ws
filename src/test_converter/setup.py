@@ -1,3 +1,5 @@
+import os
+from glob import glob
 from setuptools import find_packages, setup
 
 package_name = 'test_converter'
@@ -10,6 +12,8 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name, 'launch'), glob('launch/*')),
+        (os.path.join('share', package_name, 'config'), glob('config/*')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -32,6 +36,7 @@ setup(
             'rawConverter2 = test_converter.rawConverter2:main',
             'test_april = test_converter.test_april:main',
             'test_april_viewer = test_converter.test_april_viewer:main',
+            'cam_gps_test = test_converter.cam_gps_test:main',
         ],
     },
 )
