@@ -1,0 +1,2 @@
+uint8 status
+float32 temperature

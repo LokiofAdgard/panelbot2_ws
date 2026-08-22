@@ -33,6 +33,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/PcStat.msg"
   "msg/McStat.msg"
   "msg/MotorCmd.msg"
+  "msg/MaincStat.msg"
   DEPENDENCIES geometry_msgs std_msgs
 )
 

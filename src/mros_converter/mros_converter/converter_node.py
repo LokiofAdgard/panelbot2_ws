@@ -4,7 +4,7 @@ import numpy as np
 
 from geometry_msgs.msg import Quaternion, Vector3
 from std_msgs.msg import Float32MultiArray, UInt16MultiArray, Int16MultiArray, Int32MultiArray
-from mros_interfaces.msg import Encs, Imu, McStat, PcStat, Pbus, Tof, Ina, MotorCmd
+from mros_interfaces.msg import Encs, Imu, McStat, PcStat, Pbus, Tof, Ina, MotorCmd, MaincStat
 
 
 class ConverterNode(Node):
@@ -35,6 +35,9 @@ class ConverterNode(Node):
 
         self.mcmd_sub = self.create_subscription(
             MotorCmd, '/motorCmd', self.mCmd_callback, 10)
+        
+        self.mainc_sub = self.create_subscription(
+            UInt16MultiArray, 'raw/mainc', self.mainc_callback, 10)
 
         # -----------------------------
         # Publishers
@@ -47,6 +50,8 @@ class ConverterNode(Node):
 
         self.pub_encs = self.create_publisher(Encs, "mc/encs", 10)
         self.pub_mcstat = self.create_publisher(McStat, "mc/status", 10)
+
+        self.pub_maincstat = self.create_publisher(MaincStat, "mainc/status", 10)
 
         self.pub_mCmd = self.create_publisher(Int16MultiArray, "raw/cmd_vel", 10)
 
@@ -172,6 +177,18 @@ class ConverterNode(Node):
         arr = Int16MultiArray()
         arr.data = [scale(msg.left_lin), scale(msg.right_lin)]
         self.pub_mCmd.publish(arr)
+
+    # ------------------------------------------------------------
+    # MainC Converter → MaincStat.msg
+    # ------------------------------------------------------------
+    def mainc_callback(self, msg: UInt16MultiArray):
+        raw = msg.data
+
+        out = MaincStat()
+        out.status = raw[0] & 0xFF
+        out.temperature = float((raw[0] >> 8) & 0xFF)
+        self.pub_maincstat.publish(out)
+
 
 
 def main(args=None):
