@@ -22,7 +22,7 @@ class InitialPosPublisher(Node):
 
         self.subscription = self.create_subscription(
             Image,
-            '/camera/april_image_raw',
+            '/camera/image_raw',
             self.image_callback,
             10
         )
@@ -116,7 +116,7 @@ class InitialPosPublisher(Node):
 
         self.declare_parameter(
             "calibration_scale",
-            30.0
+            0.86
         )
 
         self.calibration_scale = float(
@@ -376,10 +376,10 @@ class InitialPosPublisher(Node):
         # Calculate initial map -> odom
         # ==================================================
 
-        initial_x = -world_tag_x
-        initial_y = -world_tag_y
+        initial_x = -world_tag_y
+        initial_y = -world_tag_x
 
-        initial_yaw = -yaw
+        initial_yaw = yaw - np.pi/2
 
         # ==================================================
         # Log

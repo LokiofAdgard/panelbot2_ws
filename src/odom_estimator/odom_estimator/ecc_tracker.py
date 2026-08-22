@@ -64,7 +64,7 @@ class ECCTracker:
 # POSE INTEGRATOR
 # ============================================================
 class PoseIntegrator:
-    def __init__(self, direction="forward_x"):
+    def __init__(self, direction="forward_y"):
         self.x = 0.0
         self.y = 0.0
         self.theta = 0.0

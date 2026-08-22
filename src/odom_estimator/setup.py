@@ -33,6 +33,7 @@ setup(
             'ecc_tracker = odom_estimator.ecc_tracker:main',
             'imu_tracker = odom_estimator.imu_tracker:main',
             'ei_tracker = odom_estimator.ei_tracker:main',
+            'validate_odom = odom_estimator.validate_odom:main',
         ],
     },
 )
