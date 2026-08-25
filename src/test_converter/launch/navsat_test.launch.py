@@ -7,7 +7,7 @@ import os
 
 def generate_launch_description():
 
-    # 1️⃣ Run AprilTag-based initial pose estimator
+    # Run AprilTag-based initial pose estimator
     test_april = Node(
         package='test_converter',
         executable='test_april',
@@ -15,7 +15,7 @@ def generate_launch_description():
         output='screen'
     )
 
-    # 2️⃣ Run initial_pos immediately
+    # Run initial_pos immediately
     initial_pos = Node(
         package='odom_estimator',
         executable='initial_pos',
@@ -23,7 +23,7 @@ def generate_launch_description():
         output='screen'
     )
 
-    # 3️⃣ After 5 seconds → run cam_gps_test
+    # After 5 seconds → run cam_gps_test
     cam_gps_test = TimerAction(
         period=5.0,
         actions=[
@@ -36,29 +36,29 @@ def generate_launch_description():
         ]
     )
 
-    # 4️⃣ After 5 seconds → run ecc_tracker
-    ecc_tracker = TimerAction(
+    # After 5 seconds → run tracker
+    tracker = TimerAction(
         period=2.0,
         actions=[
             Node(
                 package='odom_estimator',
-                executable='ecc_tracker',
-                name='ecc_tracker',
+                executable='ei_tracker',
+                name='ei_tracker',
                 output='screen'
             )
         ]
     )
 
-    # 5️⃣ Publish static TF: base_footprint_ecc → gps_link
+    # Publish static TF: base_footprint_ecc → gps_link
     static_tf = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
         name='static_tf_base_to_gps',
-        arguments=['0', '0', '0', '0', '0', '0', 'base_footprint_ecc', 'gps_link'],
+        arguments=['0', '0', '0', '0', '0', '0', 'base_footprint', 'gps_link'],
         output='screen'
     )
 
-    # 6️⃣ Launch navsat.launch.py
+    # Launch navsat.launch.py
     pkg_share = get_package_share_directory('odom_estimator')
     navsat_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -66,7 +66,7 @@ def generate_launch_description():
         )
     )
 
-    # 7️⃣ Launch RViz from share directory
+    # Launch RViz from share directory
     pkg_share_test = get_package_share_directory('test_converter')
     rviz_config = os.path.join(pkg_share_test, 'config', 'navsat_test.rviz')
 
@@ -79,11 +79,11 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        test_april,
+        # test_april,
         initial_pos,
-        cam_gps_test,
-        ecc_tracker,
+        # cam_gps_test,
+        tracker,
         static_tf,
         navsat_launch,
-        rviz
+        # rviz
     ])

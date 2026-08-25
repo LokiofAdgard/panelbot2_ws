@@ -54,7 +54,7 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        base_footprint_ecc:
+        base_footprint:
           Value: true
         gps_link:
           Value: true
@@ -70,7 +70,7 @@ Visualization Manager:
       Tree:
         map:
           odom:
-            base_footprint_ecc:
+            base_footprint:
               gps_link:
                 {}
       Update Interval: 0
@@ -225,6 +225,3 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1268
-  X: -32
-  Y: -32

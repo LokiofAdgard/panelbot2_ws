@@ -100,6 +100,32 @@ class PoseIntegrator:
     def get(self):
         return self.x, self.y, self.theta
 
+class Preprocessor:
+    def __init__(self):
+        self.crop_w = 470
+        self.crop_h = 480
+
+    def process(self, img):
+        h, w = img.shape
+        cx, cy = w // 2, h // 2
+
+        x1 = cx - self.crop_w // 2
+        y1 = cy - self.crop_h // 2
+        x2 = cx + self.crop_w // 2
+        y2 = cy + self.crop_h // 2
+
+        img = img[y1:y2, x1:x2]
+
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        img = clahe.apply(img)
+
+        sobelx = cv2.Sobel(img, cv2.CV_32F, 1, 0, ksize=7)
+        sobely = cv2.Sobel(img, cv2.CV_32F, 0, 1, ksize=7)
+        grad = cv2.magnitude(sobelx, sobely)
+        grad = cv2.normalize(grad, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+
+        return grad
+
 
 # ============================================================
 # MAIN NODE: ECC + IMU YAW FUSION (FUSED ONLY)
@@ -114,6 +140,8 @@ class ECCIMUNode(Node):
         self.declare_parameter("imu_yaw_smoothing", 0.1)
         self.declare_parameter("ecc_score_min", 0.5)
         self.declare_parameter("direction", "forward_y")
+
+        self.preproc = Preprocessor()
 
         self.w_ecc = self.get_parameter("yaw_weight_ecc").value
         self.w_imu = self.get_parameter("yaw_weight_imu").value
@@ -134,7 +162,8 @@ class ECCIMUNode(Node):
         self.sub_cam = self.create_subscription(Image, "/camera/image_raw", self.cb_cam, 10)
         self.sub_imu = self.create_subscription(Imu, "/imu/data", self.cb_imu, 50)
 
-        self.pub_fused = self.create_publisher(Odometry, "/odom_ecc_imu", 10)
+        self.pub_fused = self.create_publisher(Odometry, "/ei/odom", 10)
+        self.pub_debug = self.create_publisher(Image, "/ei/debug_image", 10)
         self.tf = tf2_ros.TransformBroadcaster(self)
 
         # Threading
@@ -182,7 +211,10 @@ class ECCIMUNode(Node):
                 stamp = self.latest_stamp
                 self.latest_frame = None
 
-            img = cv2.resize(frame, None, fx=0.5, fy=0.5)
+            proc = self.preproc.process(frame)
+            img = cv2.resize(proc, None, fx=0.5, fy=0.5)
+
+            self.publish_debug_image(stamp, img)
 
             if self.prev is None:
                 self.prev = img
@@ -222,7 +254,7 @@ class ECCIMUNode(Node):
         odom = Odometry()
         odom.header.stamp = stamp
         odom.header.frame_id = "odom"
-        odom.child_frame_id = "base_footprint_ei"
+        odom.child_frame_id = "base_footprint"
 
         odom.pose.pose.position.x = x / 2175.0
         odom.pose.pose.position.y = y / 2175.0
@@ -236,13 +268,19 @@ class ECCIMUNode(Node):
         t = TransformStamped()
         t.header.stamp = stamp
         t.header.frame_id = "odom"
-        t.child_frame_id = "base_footprint_ei"
+        t.child_frame_id = "base_footprint"
         t.transform.translation.x = x / 2175.0
         t.transform.translation.y = y / 2175.0
         t.transform.rotation.z = np.sin(th / 2)
         t.transform.rotation.w = np.cos(th / 2)
 
         self.tf.sendTransform(t)
+
+    def publish_debug_image(self, stamp, img):
+        msg = self.bridge.cv2_to_imgmsg(img, encoding="mono8")
+        msg.header.stamp = stamp
+        msg.header.frame_id = "camera_debug"
+        self.pub_debug.publish(msg)
 
 
 def main(args=None):

@@ -233,7 +233,7 @@ class ECCTrackerNode(Node):
         odom = Odometry()
         odom.header.stamp = stamp
         odom.header.frame_id = "odom"
-        odom.child_frame_id = "base_footprint_ecc"
+        odom.child_frame_id = "base_footprint"
 
         odom.pose.pose.position.x = x / 2175.0
         odom.pose.pose.position.y = y / 2175.0
@@ -246,7 +246,7 @@ class ECCTrackerNode(Node):
         t = TransformStamped()
         t.header.stamp = stamp
         t.header.frame_id = "odom"
-        t.child_frame_id = "base_footprint_ecc"
+        t.child_frame_id = "base_footprint"
         t.transform.translation.x = x / 2175.0
         t.transform.translation.y = y / 2175.0
         t.transform.rotation.z = np.sin(th / 2)
