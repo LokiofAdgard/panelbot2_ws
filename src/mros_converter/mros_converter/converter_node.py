@@ -156,8 +156,8 @@ class ConverterNode(Node):
         out = Tof()
         out.mtof_right = [float(v) for v in raw[0:64]]
         out.tof_front  = float(raw[64] - 60)
-        out.tof_left   = float(raw[65] - 60)
-        out.tof_back   = float(raw[66] - 60)
+        out.tof_back   = float(raw[65] - 60)
+        out.tof_left   = float(raw[66] - 60)
 
         self.pub_tof.publish(out)
 
@@ -165,14 +165,23 @@ class ConverterNode(Node):
     # MotorCmd Converter
     # ------------------------------------------------------------
     def mCmd_callback(self, msg: MotorCmd):
-        dead_zone = 10
-        max_val = 400
-        calib = 1
+        min_v = 0.01
+        max_v = 0.5
+        min_pwm = 200
+        max_pwm = 400
 
-        def scale(val):
-            if abs(val) <= dead_zone:
+        slope = (max_pwm - min_pwm) / (max_v - min_v)
+        intercept = min_pwm - slope * min_v
+
+        def scale(v):
+            if abs(v) <= min_v:
                 return 0
-            return int(max(-max_val, min(max_val, val * calib)))
+
+            v = max(-max_v, min(max_v, v))
+            pwm = slope * abs(v) + intercept
+            pwm = max(min_pwm, min(max_pwm, pwm))
+
+            return int(pwm if v > 0 else -pwm)
 
         arr = Int16MultiArray()
         arr.data = [scale(msg.left_lin), scale(msg.right_lin)]
