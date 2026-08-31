@@ -64,7 +64,7 @@ class ECCTracker:
 # POSE INTEGRATOR
 # ============================================================
 class PoseIntegrator:
-    def __init__(self, direction="forward_y"):
+    def __init__(self, direction="reverse_x"):
         self.x = 0.0
         self.y = 0.0
         self.theta = 0.0
@@ -109,25 +109,25 @@ class Preprocessor:
         self.crop_h = 480
 
     def process(self, img):
-        h, w = img.shape
-        cx, cy = w // 2, h // 2
+        # h, w = img.shape
+        # cx, cy = w // 2, h // 2
 
-        x1 = cx - self.crop_w // 2
-        y1 = cy - self.crop_h // 2
-        x2 = cx + self.crop_w // 2
-        y2 = cy + self.crop_h // 2
+        # x1 = cx - self.crop_w // 2
+        # y1 = cy - self.crop_h // 2
+        # x2 = cx + self.crop_w // 2
+        # y2 = cy + self.crop_h // 2
 
-        img = img[y1:y2, x1:x2]
+        # img = img[y1:y2, x1:x2]
 
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-        img = clahe.apply(img)
+        # clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        # img = clahe.apply(img)
 
-        sobelx = cv2.Sobel(img, cv2.CV_32F, 1, 0, ksize=7)
-        sobely = cv2.Sobel(img, cv2.CV_32F, 0, 1, ksize=7)
-        grad = cv2.magnitude(sobelx, sobely)
-        grad = cv2.normalize(grad, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+        # sobelx = cv2.Sobel(img, cv2.CV_32F, 1, 0, ksize=7)
+        # sobely = cv2.Sobel(img, cv2.CV_32F, 0, 1, ksize=7)
+        # grad = cv2.magnitude(sobelx, sobely)
+        # grad = cv2.normalize(grad, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
 
-        return grad
+        return img
 
 
 # ============================================================
@@ -145,7 +145,7 @@ class ECCTrackerNode(Node):
         self.preproc = Preprocessor()
 
         self.sub = self.create_subscription(
-            Image, "/camera/image_raw", self.cb, 10
+            Image, "/image_raw", self.cb, 10
         )
 
         self.pub_odom = self.create_publisher(Odometry, "/ecc/odom", 10)
@@ -201,12 +201,12 @@ class ECCTrackerNode(Node):
             # ------------------------------------------------
             # DEBUGGING OUTPUTS
             # ------------------------------------------------
-            if score < 0.3:
+            if score < 0.8:
                 self.warn(f"LOW SCORE {score:.2f} → motion unreliable")
-            elif score < 0.5:
+            elif score < 0.95:
                 self.info(f"MEDIUM SCORE {score:.2f}")
-            else:
-                self.info(f"GOOD SCORE {score:.2f}")
+            # else:
+            #     self.info(f"GOOD SCORE {score:.2f}")
 
             if abs(dx) > 40 or abs(dy) > 40:
                 self.warn(f"UNREALISTIC JUMP dx={dx:.1f} dy={dy:.1f}")
@@ -230,13 +230,15 @@ class ECCTrackerNode(Node):
     # PUBLISH ODOM + TF
     # --------------------------------------------------------
     def publish(self, stamp, x, y, th):
+        px_m_calib = 2175.0
+
         odom = Odometry()
         odom.header.stamp = stamp
         odom.header.frame_id = "odom"
         odom.child_frame_id = "base_footprint"
 
-        odom.pose.pose.position.x = x / 2175.0
-        odom.pose.pose.position.y = y / 2175.0
+        odom.pose.pose.position.x = x / px_m_calib
+        odom.pose.pose.position.y = y / px_m_calib
 
         odom.pose.pose.orientation.z = np.sin(th / 2)
         odom.pose.pose.orientation.w = np.cos(th / 2)
@@ -247,8 +249,8 @@ class ECCTrackerNode(Node):
         t.header.stamp = stamp
         t.header.frame_id = "odom"
         t.child_frame_id = "base_footprint"
-        t.transform.translation.x = x / 2175.0
-        t.transform.translation.y = y / 2175.0
+        t.transform.translation.x = x / px_m_calib
+        t.transform.translation.y = y / px_m_calib
         t.transform.rotation.z = np.sin(th / 2)
         t.transform.rotation.w = np.cos(th / 2)
 

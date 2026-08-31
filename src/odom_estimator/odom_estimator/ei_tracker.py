@@ -62,7 +62,7 @@ class ECCEstimator:
 # POSE INTEGRATOR (with direction logic)
 # ============================================================
 class PoseIntegrator:
-    def __init__(self, direction="forward_y"):
+    def __init__(self, direction="reverse_x"):
         self.x = 0.0
         self.y = 0.0
         self.theta = 0.0
@@ -100,35 +100,39 @@ class PoseIntegrator:
     def get(self):
         return self.x, self.y, self.theta
 
+
+# ============================================================
+# PREPROCESSOR
+# ============================================================
 class Preprocessor:
     def __init__(self):
         self.crop_w = 470
         self.crop_h = 480
 
     def process(self, img):
-        h, w = img.shape
-        cx, cy = w // 2, h // 2
+        # h, w = img.shape
+        # cx, cy = w // 2, h // 2
 
-        x1 = cx - self.crop_w // 2
-        y1 = cy - self.crop_h // 2
-        x2 = cx + self.crop_w // 2
-        y2 = cy + self.crop_h // 2
+        # x1 = cx - self.crop_w // 2
+        # y1 = cy - self.crop_h // 2
+        # x2 = cx + self.crop_w // 2
+        # y2 = cy + self.crop_h // 2
 
-        img = img[y1:y2, x1:x2]
+        # img = img[y1:y2, x1:x2]
 
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-        img = clahe.apply(img)
+        # clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        # img = clahe.apply(img)
 
-        sobelx = cv2.Sobel(img, cv2.CV_32F, 1, 0, ksize=7)
-        sobely = cv2.Sobel(img, cv2.CV_32F, 0, 1, ksize=7)
-        grad = cv2.magnitude(sobelx, sobely)
-        grad = cv2.normalize(grad, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+        # sobelx = cv2.Sobel(img, cv2.CV_32F, 1, 0, ksize=7)
+        # sobely = cv2.Sobel(img, cv2.CV_32F, 0, 1, ksize=7)
+        # grad = cv2.magnitude(sobelx, sobely)
+        # grad = cv2.normalize(grad, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
 
-        return grad
+        return img
 
 
 # ============================================================
-# MAIN NODE: ECC + IMU YAW FUSION (FUSED ONLY)
+# MAIN NODE — ECC + IMU WEIGHTED YAW
 # ============================================================
 class ECCIMUNode(Node):
     def __init__(self):
@@ -139,7 +143,7 @@ class ECCIMUNode(Node):
         self.declare_parameter("yaw_weight_imu", 1.0)
         self.declare_parameter("imu_yaw_smoothing", 0.1)
         self.declare_parameter("ecc_score_min", 0.5)
-        self.declare_parameter("direction", "forward_y")
+        self.declare_parameter("direction", "reverse_x")
 
         self.preproc = Preprocessor()
 
@@ -157,18 +161,18 @@ class ECCIMUNode(Node):
         self.prev = None
 
         self.ecc = ECCEstimator()
-        self.integrator_fused = PoseIntegrator(direction=direction)
+        self.integrator = PoseIntegrator(direction=direction)
 
-        self.sub_cam = self.create_subscription(Image, "/camera/image_raw", self.cb_cam, 10)
+        self.sub_cam = self.create_subscription(Image, "/image_raw", self.cb_cam, 10)
         self.sub_imu = self.create_subscription(Imu, "/imu/data", self.cb_imu, 50)
 
-        self.pub_fused = self.create_publisher(Odometry, "/ei/odom", 10)
+        self.pub_odom = self.create_publisher(Odometry, "/ei/odom", 10)
         self.pub_debug = self.create_publisher(Image, "/ei/debug_image", 10)
         self.tf = tf2_ros.TransformBroadcaster(self)
 
         # Threading
         self.lock = threading.Lock()
-        self.latest_frame = None
+        self.latest = None
         self.latest_stamp = None
 
         self.worker = threading.Thread(target=self.loop, daemon=True)
@@ -196,7 +200,7 @@ class ECCIMUNode(Node):
     def cb_cam(self, msg):
         img = self.bridge.imgmsg_to_cv2(msg, "mono8")
         with self.lock:
-            self.latest_frame = img
+            self.latest = img
             self.latest_stamp = msg.header.stamp
 
     # --------------------------------------------------------
@@ -205,11 +209,11 @@ class ECCIMUNode(Node):
     def loop(self):
         while rclpy.ok():
             with self.lock:
-                if self.latest_frame is None:
+                if self.latest is None:
                     continue
-                frame = self.latest_frame.copy()
+                frame = self.latest.copy()
                 stamp = self.latest_stamp
-                self.latest_frame = None
+                self.latest = None
 
             proc = self.preproc.process(frame)
             img = cv2.resize(proc, None, fx=0.5, fy=0.5)
@@ -229,48 +233,53 @@ class ECCIMUNode(Node):
             if score < self.ecc_score_min:
                 self.get_logger().warn(f"ECC score low: {score:.2f}")
                 continue
+            elif score < 0.95:
+                self.get_logger().info(f"[ECC] MEDIUM SCORE {score:.2f}")
+            # else:
+            #     self.info(f"GOOD SCORE {score:.2f}")
 
             dx *= 2.0
             dy *= 2.0
 
             # ------------------------------------------------
-            # FUSED YAW
+            # FUSED YAW (ECC + IMU)
             # ------------------------------------------------
             theta_fused = self.w_ecc * theta_ecc + self.w_imu * self.imu_yaw
 
-            self.integrator_fused.update(dx, dy, 0.0)
-            self.integrator_fused.set_theta(theta_fused)
+            self.integrator.update(dx, dy, 0.0)
+            self.integrator.set_theta(theta_fused)
 
-            x_fused, y_fused, th_fused = self.integrator_fused.get()
+            x, y, th = self.integrator.get()
 
-            self.publish_fused(stamp, x_fused, y_fused, th_fused)
+            self.publish(stamp, x, y, th)
 
             self.prev = img
 
     # --------------------------------------------------------
     # PUBLISH FUSED ECC + IMU
     # --------------------------------------------------------
-    def publish_fused(self, stamp, x, y, th):
+    def publish(self, stamp, x, y, th):
+        px_m_calib = 2175.0
+
         odom = Odometry()
         odom.header.stamp = stamp
         odom.header.frame_id = "odom"
         odom.child_frame_id = "base_footprint"
 
-        odom.pose.pose.position.x = x / 2175.0
-        odom.pose.pose.position.y = y / 2175.0
+        odom.pose.pose.position.x = x / px_m_calib
+        odom.pose.pose.position.y = y / px_m_calib
 
         odom.pose.pose.orientation.z = np.sin(th / 2)
         odom.pose.pose.orientation.w = np.cos(th / 2)
 
-        self.pub_fused.publish(odom)
+        self.pub_odom.publish(odom)
 
-        # TF for fused odom
         t = TransformStamped()
         t.header.stamp = stamp
         t.header.frame_id = "odom"
         t.child_frame_id = "base_footprint"
-        t.transform.translation.x = x / 2175.0
-        t.transform.translation.y = y / 2175.0
+        t.transform.translation.x = x / px_m_calib
+        t.transform.translation.y = y / px_m_calib
         t.transform.rotation.z = np.sin(th / 2)
         t.transform.rotation.w = np.cos(th / 2)
 

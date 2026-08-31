@@ -165,22 +165,21 @@ class ConverterNode(Node):
     # MotorCmd Converter
     # ------------------------------------------------------------
     def mCmd_callback(self, msg: MotorCmd):
-        min_v = 0.01
+        min_v = 0.08
         max_v = 0.5
-        min_pwm = 200
+        min_pwm = 235
         max_pwm = 400
 
-        slope = (max_pwm - min_pwm) / (max_v - min_v)
-        intercept = min_pwm - slope * min_v
+        def poly_pwm(x):
+            return 253 - 440*x + 2912*(x*x)
 
         def scale(v):
             if abs(v) <= min_v:
                 return 0
 
             v = max(-max_v, min(max_v, v))
-            pwm = slope * abs(v) + intercept
+            pwm = poly_pwm(abs(v))
             pwm = max(min_pwm, min(max_pwm, pwm))
-
             return int(pwm if v > 0 else -pwm)
 
         arr = Int16MultiArray()
