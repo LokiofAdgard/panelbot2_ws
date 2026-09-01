@@ -16,13 +16,13 @@ class InitialPosPublisher(Node):
         super().__init__('initial_pos_publisher')
 
         # Camera topic to listen to
-        CAM_TOPIC = "/camera/image_raw"
+        CAM_TOPIC = "/image_raw"
 
         # Expected AprilTag ID
         TAG_ID = 0
 
         # Physical tag size (meters)
-        TAG_SIZE = 0.10
+        TAG_SIZE = 0.048
 
         # Camera intrinsics
         IMG_W = 640
@@ -33,12 +33,12 @@ class InitialPosPublisher(Node):
         CY = IMG_H / 2.0
 
         # Axis mapping: camera_x, -camera_x, camera_y, -camera_y
-        X_AXIS = "-camera_y"
-        Y_AXIS = "-camera_x"
+        X_AXIS = "camera_y"
+        Y_AXIS = "camera_x"
         INVERT_YAW = True
 
         # Calibration multiplier (distance correction)
-        CALIB_SCALE = 30.0
+        CALIB_SCALE = 1.0
 
         # Manual offsets applied AFTER estimation
         OFFSET_X = 0.0
@@ -152,26 +152,35 @@ class InitialPosPublisher(Node):
             self.get_logger().warn("Pose estimation failed")
             return
 
-        # Camera → Tag translation
-        cam_x = float(tvec[0][0]) * self.calibration_scale
-        cam_y = float(tvec[1][0]) * self.calibration_scale
-        cam_z = float(tvec[2][0]) * self.calibration_scale
 
-        # Rotation matrix → yaw
-        R, _ = cv2.Rodrigues(rvec)
-        yaw = np.arctan2(R[1, 0], R[0, 0])
+        t_cam_tag = tvec.reshape(3, 1) * self.calibration_scale
 
-        # Convert axes
-        world_x = self.get_axis_value(cam_x, cam_y, self.x_axis)
-        world_y = self.get_axis_value(cam_x, cam_y, self.y_axis)
+        R_cam_tag, _ = cv2.Rodrigues(rvec)
 
-        # Initial map→odom transform
-        init_x = -world_x + self.offset_x
-        init_y = -world_y + self.offset_y
-        init_yaw = -yaw + self.offset_yaw
+        R_tag_cam = R_cam_tag.T
+        t_tag_cam = -R_tag_cam @ t_cam_tag
+
+        tag_x = float(t_tag_cam[0, 0])
+        tag_y = float(t_tag_cam[1, 0])
+        tag_z = float(t_tag_cam[2, 0])
+
+        # Yaw of CAMERA relative to TAG
+        yaw = np.arctan2(R_tag_cam[1, 0], R_tag_cam[0, 0])
+
+        # Convert AprilTag-frame axes into map axes
+        world_x = self.get_axis_value(tag_x, tag_y, self.x_axis)
+        world_y = self.get_axis_value(tag_x, tag_y, self.y_axis)
+
+        # Apply configured offsets
+        init_x = world_x + self.offset_x
+        init_y = world_y + self.offset_y
+        init_yaw = yaw + self.offset_yaw
 
         if self.invert_yaw:
             init_yaw = -init_yaw
+
+        # Optional: keep yaw normalized
+        init_yaw = np.arctan2(np.sin(init_yaw), np.cos(init_yaw))
 
         # Publish TF
         self.publish_tf(init_x, init_y, init_yaw)

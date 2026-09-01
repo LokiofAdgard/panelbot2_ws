@@ -14,7 +14,7 @@ class FakeAprilTagPublisher(Node):
 
         self.publisher = self.create_publisher(
             Image,
-            '/camera/april_image_raw',
+            '/image_raw',
             10
         )
 
@@ -41,10 +41,10 @@ class FakeAprilTagPublisher(Node):
 
         # Position of tag center
         self.tag_x = 420
-        self.tag_y = 240
+        self.tag_y = 290
 
         # Rotation around camera optical axis
-        self.tag_rotation = 30.0
+        self.tag_rotation = -90.0 + 20
 
         # ==================================================
         # Publish rate

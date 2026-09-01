@@ -5,8 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /Status1
-        - /Image1
+        - /TF1/Frames1
       Splitter Ratio: 0.5
     Tree Height: 239
   - Class: rviz_common/Selection
@@ -60,7 +59,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /camera/april_image_raw
+        Value: /image_raw
       Value: true
     - Class: rviz_default_plugins/TF
       Enabled: true
@@ -68,11 +67,51 @@ Visualization Manager:
       Filter (whitelist): ""
       Frame Timeout: 15
       Frames:
-        All Enabled: true
+        All Enabled: false
+        base_footprint:
+          Value: false
+        base_link:
+          Value: false
+        downward_camera_link:
+          Value: false
+        front_bumper_link:
+          Value: false
+        front_left_wheel_link:
+          Value: false
+        front_right_wheel_link:
+          Value: false
+        front_skirt:
+          Value: false
+        front_tof_link:
+          Value: false
+        imu_link:
+          Value: false
+        left_cliff_tof_link:
+          Value: false
+        left_skirt:
+          Value: false
         map:
           Value: true
         odom:
           Value: true
+        rear_left_cliff_tof_link:
+          Value: false
+        rear_left_wheel_link:
+          Value: false
+        rear_right_cliff_tof_link:
+          Value: false
+        rear_right_wheel_link:
+          Value: false
+        rear_skirt:
+          Value: false
+        right_cliff_tof_link:
+          Value: false
+        right_skirt:
+          Value: false
+        solarbot/base_footprint:
+          Value: false
+        top_shell_link:
+          Value: false
       Marker Scale: 1
       Name: TF
       Show Arrows: true
@@ -81,13 +120,50 @@ Visualization Manager:
       Tree:
         map:
           odom:
-            {}
+            base_footprint:
+              base_link:
+                downward_camera_link:
+                  {}
+                front_bumper_link:
+                  {}
+                front_left_wheel_link:
+                  {}
+                front_right_wheel_link:
+                  {}
+                front_skirt:
+                  {}
+                front_tof_link:
+                  {}
+                imu_link:
+                  {}
+                left_cliff_tof_link:
+                  {}
+                left_skirt:
+                  {}
+                rear_left_cliff_tof_link:
+                  {}
+                rear_left_wheel_link:
+                  {}
+                rear_right_cliff_tof_link:
+                  {}
+                rear_right_wheel_link:
+                  {}
+                rear_skirt:
+                  {}
+                right_cliff_tof_link:
+                  {}
+                right_skirt:
+                  {}
+                top_shell_link:
+                  {}
+            solarbot/base_footprint:
+              {}
       Update Interval: 0
       Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: map
+    Fixed Frame: odom
     Frame Rate: 30
   Name: root
   Tools:
@@ -129,26 +205,21 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz_default_plugins/Orbit
-      Distance: 2.2022812366485596
+      Angle: 3.1400012969970703
+      Class: rviz_default_plugins/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Focal Point:
-        X: 0.029606251046061516
-        Y: 0.0233857911080122
-        Z: 2.9460949008353055e-05
-      Focal Shape Fixed Size: true
-      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5697963237762451
+      Scale: 439.8723449707031
       Target Frame: <Fixed Frame>
-      Value: Orbit (rviz)
-      Yaw: 3.135399580001831
+      Value: TopDownOrtho (rviz_default_plugins)
+      X: 0.0013695938978344202
+      Y: -0.000220315414480865
     Saved: ~
 Window Geometry:
   Displays:
@@ -168,5 +239,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1268
-  X: -32
-  Y: -32
+  X: 0
+  Y: 0

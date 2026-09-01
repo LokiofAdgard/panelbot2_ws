@@ -165,13 +165,13 @@ class ConverterNode(Node):
     # MotorCmd Converter
     # ------------------------------------------------------------
     def mCmd_callback(self, msg: MotorCmd):
-        min_v = 0.08
-        max_v = 0.5
+        min_v = 0.2
+        max_v = 0.7
         min_pwm = 235
         max_pwm = 400
 
         def poly_pwm(x):
-            return 253 - 440*x + 2912*(x*x)
+            return 253 - 220*x + 728*(x*x)
 
         def scale(v):
             if abs(v) <= min_v:
