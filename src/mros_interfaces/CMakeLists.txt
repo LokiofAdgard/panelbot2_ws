@@ -34,6 +34,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/McStat.msg"
   "msg/MotorCmd.msg"
   "msg/MaincStat.msg"
+  "msg/EdgeData.msg"
   DEPENDENCIES geometry_msgs std_msgs
 )
 

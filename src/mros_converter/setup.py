@@ -30,6 +30,7 @@ setup(
         'console_scripts': [
             'converter_node = mros_converter.converter_node:main',
             'safety_monitor = mros_converter.safety_monitor:main',
+            'tof_analyzer = mros_converter.tof_analyzer:main',
         ],
     },
 )

@@ -38,6 +38,7 @@ setup(
             'test_april_viewer = test_converter.test_april_viewer:main',
             'cam_gps_test = test_converter.cam_gps_test:main',
             'sq_driver = test_converter.sq_driver:main',
+            'edge_driver = test_converter.edge_driver:main',
         ],
     },
 )
