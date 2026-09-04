@@ -33,7 +33,7 @@ class ECCEstimator:
         x = np.linspace(-1, 1, w)
         y = np.linspace(-1, 1, h)
         xv, yv = np.meshgrid(x, y)
-        mask = np.exp(-(xv**2 + yv**2) / 0.25)
+        mask = np.exp(-(xv**2 + yv**2) / 0.05)
         mask = (mask * 255).astype(np.uint8)
 
         try:
@@ -110,23 +110,17 @@ class Preprocessor:
         self.crop_h = 480
 
     def process(self, img):
-        # h, w = img.shape
-        # cx, cy = w // 2, h // 2
+        h, w = img.shape
+        cx, cy = w // 2, h // 2
 
-        # x1 = cx - self.crop_w // 2
-        # y1 = cy - self.crop_h // 2
-        # x2 = cx + self.crop_w // 2
-        # y2 = cy + self.crop_h // 2
+        x1 = max(0, cx - self.crop_w // 2)
+        y1 = max(0, cy - self.crop_h // 2)
+        x2 = min(w, cx + self.crop_w // 2)
+        y2 = min(h, cy + self.crop_h // 2)
 
-        # img = img[y1:y2, x1:x2]
+        img = img[y1:y2, x1:x2]
 
-        # clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-        # img = clahe.apply(img)
-
-        # sobelx = cv2.Sobel(img, cv2.CV_32F, 1, 0, ksize=7)
-        # sobely = cv2.Sobel(img, cv2.CV_32F, 0, 1, ksize=7)
-        # grad = cv2.magnitude(sobelx, sobely)
-        # grad = cv2.normalize(grad, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+        img = cv2.GaussianBlur(img, (5, 5), 0)
 
         return img
 

@@ -38,7 +38,7 @@ class SquareDriverTF(Node):
         self.pub_cmdvel = self.create_publisher(Twist, "/cmd_vel", 10)
 
         # Toggle cmd_vel publishing
-        self.use_cmd_vel = True
+        self.use_cmd_vel = False
 
         # TF listener
         self.tf_buffer = Buffer()

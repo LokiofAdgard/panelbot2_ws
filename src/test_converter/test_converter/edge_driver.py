@@ -111,7 +111,7 @@ class RightEdgeDriver(Node):
         self.base_speed = 0.25
 
         # Emergency threshold
-        self.emergency_dist = 0.0
+        self.emergency_dist = 20.0
 
         # Wheel separation used only for optional cmd_vel
         self.wheelbase = 0.20
