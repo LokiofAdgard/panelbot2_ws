@@ -44,6 +44,21 @@ def generate_launch_description():
                 package='odom_estimator',
                 executable='ei_tracker',
                 name='ei_tracker',
+                output='screen',
+                parameters=[
+                    {"process_mode": "default"}
+                ]
+            )
+        ]
+    )
+
+    gps_tracker = TimerAction(
+        period=2.0,
+        actions=[
+            Node(
+                package='odom_estimator',
+                executable='gps_tracker',
+                name='gps_tracker',
                 output='screen'
             )
         ]
@@ -68,7 +83,7 @@ def generate_launch_description():
 
     # Launch RViz from share directory
     pkg_share_test = get_package_share_directory('test_converter')
-    rviz_config = os.path.join(pkg_share_test, 'config', 'navsat_test.rviz')
+    rviz_config = os.path.join(pkg_share_test, 'config', 'bag_test.rviz')
 
     rviz = Node(
         package='rviz2',
@@ -80,10 +95,11 @@ def generate_launch_description():
 
     return LaunchDescription([
         # test_april,
-        initial_pos,
+        # initial_pos,
         # cam_gps_test,
         tracker,
         static_tf,
-        navsat_launch,
+        # gps_tracker,
+        # navsat_launch,
         # rviz
     ])

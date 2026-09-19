@@ -15,7 +15,7 @@ class FakeGPSCam(Node):
         self.pub_fix = self.create_publisher(NavSatFix, '/fix', 10)
         self.pub_vel = self.create_publisher(TwistStamped, '/vel', 10)
         self.pub_time = self.create_publisher(TimeReference, '/time_reference', 10)
-        self.pub_img = self.create_publisher(Image, '/camera/image_raw', 10)
+        self.pub_img = self.create_publisher(Image, '/image_raw', 10)
         self.pub_info = self.create_publisher(CameraInfo, '/camera_info', 10)
 
         # Initial GPS position (change if needed)

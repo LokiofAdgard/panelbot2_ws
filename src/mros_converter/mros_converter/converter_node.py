@@ -116,11 +116,6 @@ class ConverterNode(Node):
         stat.req = (bits >> 10) & 0x0F
         stat.temperature = temp(raw[18])
 
-        if stat.bat < 11.0:
-            self.get_logger().warn(f"Battery voltage low: {stat.bat:.2f} V")
-        if stat.bat > 12.6:
-            self.get_logger().error(f"Battery voltage high: {stat.bat:.2f} V")
-
         self.pub_pcstat.publish(stat)
 
     # ------------------------------------------------------------

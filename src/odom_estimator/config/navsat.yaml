@@ -13,3 +13,11 @@ navsat_transform_node:
 
     publish_filtered_gps: true
     gps_frame_id: "gps_link"
+
+    use_altitude: false
+    use_fixed_covariance: true
+    fixed_covariance: 0.1
+
+    use_vel: false
+    use_time_reference: false
+    use_utc_time: false
