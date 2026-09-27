@@ -9,7 +9,7 @@ def generate_launch_description():
         executable='micro_ros_agent',
         name='micro_ros_agent_serial',
         output='screen',
-        arguments=['serial', '--dev', '/dev/ttyACM0', '-b', '1000000']
+        arguments=['serial', '--dev', '/dev/serial/by-id/usb-1a86_USB_Single_Serial_5C38194530-if00', '-b', '1000000']
     )
 
     delayed_converter = TimerAction(

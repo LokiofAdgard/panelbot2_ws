@@ -8,7 +8,7 @@ def generate_launch_description():
         name='gps_driver',
         output='screen',
         parameters=[
-            {'port': '/dev/ttyACM0'},
+            {'port': '/dev/serial/by-id/usb-u-blox_AG_-_www.u-blox.com_u-blox_GNSS_receiver-if00'},
             {'baud': 115200},
             {'frame_id': 'gps_link'},
             {'useRMC': True},
